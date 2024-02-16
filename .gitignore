@@ -1,0 +1,28 @@
+*.zip
+pbe_aqg_potsawee_t5/
+transformers-js*
+onnxModel/onnx_*
+*/shared.weight
+onnx/
+*.bin
+.Python
+build/
+
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+
+# models
+build*
+dist
+models*
+models/
+baseModels/
+*/wandb/
+
+# data
+SQuAD/
+customData/
+data/
+!nkjv.csv
