@@ -1,0 +1,21 @@
+\section{Future Work}
+\subsection{Platform}
+We faced several issues during this project. Primary of these is that Azure's AutoML Workspace was likely not the best tool for the job. The platform promised an easy-to-use automated machine learning process, but proved very difficult to navigate and configure. This is probably because this platform does not target scientific research, but rather automatic model and business intelligence development and their deployment.
+
+Thus, in future work, a different tool would be used. Weka 3, a software for machine learning written in Java, shows more promise with the added benefit that it is free to use. Moreover, it offers many types of clustering algorithms while Azure AutoML only offers one. Thus, any future clustering experiments will probably be performed in Weka 3.
+
+\subsection{Data Integrity}
+Several aspects of and incorrect assumptions about the original data may have caused issues in this project. The experiments might benefit from having data that has been balanced to include the similar amounts of high and low scores. More data with final grades below ``B'' should be collected and combined with the current dataset. Also, a better balance is needed between the different attendance categories. Currently, ``Late,'' ``Absent,'' and ``Excused'' attendance records represent only 11.6\% of attendance data.
+
+Other assumptions remain untested. For instance, ``distanceToFront'' was relative for each classroom. Thus, some students in the back of one classroom may be farther away from their instructor than students in the back of another classroom that contains fewer rows. If physical distance has a significant impact, that factor is lost in this process, as both seats in the rear of any classroom would be assigned values of ``1''. Also, data about the horizontal placement of a student within a classroom was not processed or converted into a numerical format.
+
+Moreover, correct data entry cannot be guaranteed unless researchers or their representatives ensure that a student's self-reported attendance matches reality. For example, if one student accidentally selects the wrong seat in the ATS, they cannot change their selection. Even worse, in the event of such an accident other students cannot select that seat even if they are actually sitting in it. This often triggers a domino effect of incorrect data as students select random seats in the classroom just to satisfy class attendance requirements before they are marked as "Late."
+
+\subsection{Approach}
+In this project, models were trained on records of every piece of attendance information with a final grade attached. This results in a system where courses that meet many times during a week have more influence on machine learning models than courses that meet fewer times. Classes that meet four times a week should not have this type of privilege over courses that meet once or twice a week for the same total hours.
+
+A better method might calculate average metrics such as ``distanceToFront'' and attendance for each student in each course. This data could then be provided to the AutoML platform, avoiding the ``meeting times'' issue. It could even be systematically scaled by the number of credits offered in the course to further even out the weight of the information.
+
+Other variables, such as a professor's teaching style, adjustable tardiness thresholds,\footnote{Professors were able to set what counted as "Late" in the ATS for each class. Thus, in some classes selecting a seat five minutes after the start of the event marked the student as "Late" while in others the system would record that they were "Present."} and time of day were not controlled. To mitigate this, a more structured study needs to be planned and documented.
+
+In summary, many areas require improvement and further research. These studies and their experiments should take all the above factors into account.
