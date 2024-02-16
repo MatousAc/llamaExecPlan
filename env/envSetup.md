@@ -8,8 +8,11 @@ The two environments available in this folder are for the SoC GPUs and for a loc
 
 Here is an explanation of each saved environment:
 ### Current envs
-* [qagHfCuda.yml](archive/qagHfCuda.yml) - main environment to use for this repository and thesis. use this for training LLaMA 2 with the trainer, data formatter, data processor, and other scripts in the `src/` directory.
-* [qagHf.yml](archive/qagHf.yml) - the non-cuda, local version of the environment. should allow for data processing and inference based on the final model
+* [qagHfCuda.yml](qagHfCuda.yml) - main environment to use for this repository and thesis. use this for training LLaMA 2 with the trainer, data formatter, data processor, and other scripts in the `src/` directory.
+* [qagHf.yml](qagHf.yml) - the non-cuda, local version of the environment. should allow for data processing and inference based on the final model
+
+## DB Setup
+Use [sauAttendance.yml](sauAttendance.yml) to pull up a docker container of SQL Server locally. Instructions for running are in [sauAttendance.yml](sauAttendance.yml).
 
 ## Start from scratch
 Otherwise start a conda environment from scratch with:
