@@ -1,0 +1,29 @@
+# in the current dir. run with:
+# docker-compose -f sauAttendance.yml up -d
+
+# connect to db using:
+# host: localhost,1433
+# user: sa
+# password: (below)
+
+# if not trying to preserve data, comment out the volumes sections
+
+version: '3.8'
+
+name: sauDB
+services:
+  mssql:
+    container_name: attendanceDB
+    image: mcr.microsoft.com/mssql/server
+    # hostname: sqlpreview
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "_nam3685"
+      # MSSQL_PID: Evaluation
+    ports:
+      - 1433:1433
+    volumes:
+      - mssql_attendanceDB:/var/opt/mssql
+volumes:
+  mssql_attendanceDB:
+
