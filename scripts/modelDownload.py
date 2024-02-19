@@ -1,9 +1,19 @@
+import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_source = input('hf model name: ')
-model_destination = f'/home/ac/code/qag/models/{input("save to (models/...): ")}/'
+# get base directory path
+repo = 'llamaExecPlan'
+basePath = f'{os.getcwd().split(repo)[0]}{repo}'
+basePath = os.path.normpath(basePath)
+print(basePath)
 
-model = AutoModelForCausalLM.from_pretrained(model_source)
-tokenizer = AutoTokenizer.from_pretrained(model_source)
-model.save_pretrained(model_destination)
-tokenizer.save_pretrained(model_destination)
+# get model source and dest from user
+modelSource = input('hf model name: ')
+modelDestination = os.path.normpath(basePath + '/' + input("model folder name: "))
+print(f'saving {modelSource} to {modelDestination}')
+
+# download and save models
+model = AutoModelForCausalLM.from_pretrained(modelSource)
+tokenizer = AutoTokenizer.from_pretrained(modelSource)
+model.save_pretrained(modelDestination)
+tokenizer.save_pretrained(modelDestination)

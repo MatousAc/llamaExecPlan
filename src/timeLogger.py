@@ -1,32 +1,33 @@
 # import libraries we need
-from qagBase import QAGBase
+from configBase import ConfigBase
 import time
 
-class TimeLogger(QAGBase):
+class TimeLogger(ConfigBase):
   def configure(self):
-    self.mode = self.cp['qagTrainer']['mode']
     self.logDir = self.paths['log']
-    self.start = None
-    self.stop = None
+    print(self.logDir)
+    self.startTime = None
+    self.stopTime = None
     self.timing = False
     
-  def play(self):
+  def start(self):
     if self.timing:
       print('Already timing')
       return
     
     self.timing = True
-    self.start = time.time()
+    self.startTime = time.time()
     
-  def pause(self, log = True):
+  # stops timer, logs by default
+  def stop(self, log = True):
     if not self.timing:
       print('Not timing')
       return
     
-    self.stop = time.time()
+    self.stopTime = time.time()
     self.timing = False
-    elapsedSeconds = self.stop - self.start
-    model = self.paths["base"].split("/")[-1]
+    elapsedSeconds = self.stopTime - self.startTime
+    model = self.paths["baseModel"].split("/")[-1]
     if log:
       f = open(f'{self.logDir}/baseModelExecutionTime.txt', "a")
       f.write(f'{model}, {round(elapsedSeconds, 3)}\n')
@@ -34,4 +35,4 @@ class TimeLogger(QAGBase):
     return elapsedSeconds
     
 if __name__ == '__main__':
-  pass
+  TimeLogger()

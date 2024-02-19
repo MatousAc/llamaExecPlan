@@ -16,6 +16,7 @@
     "fillna",
     "fmeasure",
     "huggingface",
+    "Inferer",
     "iterrows",
     "Jehoiakim",
     "Lmqg",

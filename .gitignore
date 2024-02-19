@@ -1,9 +1,5 @@
 *.zip
-pbe_aqg_potsawee_t5/
 transformers-js*
-onnxModel/onnx_*
-*/shared.weight
-onnx/
 *.bin
 .Python
 build/
