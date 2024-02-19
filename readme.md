@@ -8,16 +8,16 @@ The two environments available in this folder are for the SoC GPUs and for a loc
 
 Here is an explanation of each saved environment:
 ### Current envs
-* [qagHfCuda.yml](env/qagHfCuda.yml) - main environment to use for this repository and thesis. use this for training LLaMA 2 with the trainer, data formatter, data processor, and other scripts in the `src/` directory.
-* [qagHf.yml](env/qagHf.yml) - the non-cuda, local version of the environment. should allow for data processing and inference based on the final model
+* [llamaInferenceCuda.yml](env/llamaInferenceCuda.yml) - main environment to use for this repository and thesis. use this for training LLaMA 2 with the trainer, data formatter, data processor, and other scripts in the `src/` directory.
+* [llamaInference.yml](env/llamaInference.yml) - the non-cuda, local version of the environment. should allow for data processing and inference based on the final model
 
 ## Start from scratch
 Try not to choose this option, it has not been updated in a while.
 Otherwise start a conda environment from scratch with:
 
 ```
-conda create -n qagHf
-conda activate qagHf
+conda create -n llamaInference
+conda activate llamaInference
 conda install python=3.11.5
 ```
 

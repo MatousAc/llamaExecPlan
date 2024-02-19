@@ -1,4 +1,4 @@
-name: qagHfCuda
+name: llamaInferenceCuda
 channels:
   - conda-forge
   - defaults
@@ -137,4 +137,4 @@ dependencies:
       - widgetsnbextension==4.0.9
       - xxhash==3.3.0
       - yarl==1.9.2
-prefix: /home/ac/miniconda3/envs/qagHfCuda
+prefix: /home/ac/miniconda3/envs/llamaInferenceCuda
