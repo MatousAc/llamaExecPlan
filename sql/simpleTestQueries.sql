@@ -1,3 +1,4 @@
+use attendanceDB;
 set showplan_text on;
 set showplan_text off;
 
