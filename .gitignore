@@ -26,6 +26,7 @@ data/
 # latex
 */*.out
 */*.fls
+*/*.bbl
 */*.aux
 */*.log
 */*.fdb_latexmk

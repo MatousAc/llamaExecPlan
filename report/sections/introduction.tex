@@ -1,22 +1,20 @@
 \section{Introduction}
-\subsection{Problem}
-It has been over fifty years since Edgar Codd first defined relational databases \cite{codd1970}. Relational databases and Relational Database Management Systems (RDBMSs) have been fine tuned and optimized over the decades. Rather than yet another algorithm, the next major advancement for database technology lies in incorporating artificial intelligence (AI).
+It has been over fifty years since Edgar Codd first defined relational databases \cite{codd1970}. Relational databases and Relational Database Management Systems (RDBMSs) have been fine-tuned and optimized over the decades. Rather than yet another algorithm, the next major advancement for database technology lies in incorporating artificial intelligence (AI).
 
 Li, Zhou and Cao summarized research topic and future milestone as leveraging AI to create a more intelligent database, succinctly abbreviating this paradigm as ``AI4DB'' \cite{li2021}. One of the primary implementations of AI4DB involves ``learning-based database optimization.'' This may involve various optimizations including:
+
 \begin{enumerate}
   \item seeking to use artificial intelligence to help choose the join order of a query
   \item estimating the size of the results of a potential operation
   \item replacing one query with another more direct query
 \end{enumerate}
 
-One potential integration joins large language models (LLMs) and databases. Since Vaswani et al. introduced transformers in 2017 \cite{vaswani2017}, researchers have incrementally trained increasingly more capable models to produce and understand natural language. Additionally, these models contain large amounts of knowledge about the real world that may improve RDBMS performance.
+One potential integration joins large language models (LLMs) and databases. Since Vaswani et al. introduced transformers in 2017, researchers have incrementally trained increasingly more capable models to produce and understand natural language \cite{vaswani2017}. Additionally, these models contain large amounts of knowledge about the real world that may improve RDBMS performance.
 
 Although domain-specific LLMs can be trained on example or even production databases, it is critical to assess the capabilities of less specific models to provide a baseline for future development. Therefore, the goal of this research is to accurately asses the capabilities of large language models when applied to query execution plans and their optimization.
 
-\subsection{Solution}
 This research tests LLM capabilities by requiring an LLM to produce query optimization plans given table statistics and a query. The outputs are then qualitatively compared to the an optimized RDBMS execution plan.
 
-\subsection{Limitations}
 Because most LLMs are closed source, we can only use system prompts with open-source models. Thus, we will focus on only evaluating Llama 2 with these methods \cite{touvron2023}. Also, our research does not train new or fine tune current models, so it cannot used to determine the utility of models trained specifically for databases.
 
 
