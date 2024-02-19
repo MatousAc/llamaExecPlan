@@ -5,6 +5,7 @@
     "astype",
     "babienco",
     "chardet",
+    "Codd",
     "Cuda",
     "dataframe",
     "detokenize",
@@ -34,8 +35,11 @@
     "pretrained",
     "pretraining",
     "randomverse",
+    "RDBMS",
     "uncapitalize",
-    "untokenized"
+    "untokenized",
+    "Vaswani",
+    "Zhou"
   ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8"

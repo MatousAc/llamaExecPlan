@@ -21,6 +21,15 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{codd1970}
+E.~F. Codd, ``A relational model of data for large shared data banks,''
+  \emph{Communications of the ACM}, vol.~13, no.~6, pp. 377--387, 1970.
+
+\bibitem{li2021}
+G.~Li, X.~Zhou, and L.~Cao, ``Ai meets database: Ai4db and db4ai,'' in
+  \emph{Proceedings of the 2021 International Conference on Management of
+  Data}, 2021, pp. 2859--2866.
+
 \bibitem{vaswani2017}
 A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez, L.~u.
   Kaiser, and I.~Polosukhin, ``Attention is all you need,'' in \emph{Advances
@@ -29,5 +38,12 @@ A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez, L.~u.
   vol.~30.\hskip 1em plus 0.5em minus 0.4em\relax Curran Associates, Inc.,
   2017, available at:
   \url{https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf}.
+
+\bibitem{touvron2023}
+H.~Touvron, L.~Martin, K.~Stone, P.~Albert, A.~Almahairi, Y.~Babaei,
+  N.~Bashlykov, S.~Batra, P.~Bhargava, S.~Bhosale \emph{et~al.}, ``Llama 2:
+  Open foundation and fine-tuned chat models,'' \emph{arXiv preprint
+  arXiv:2307.09288}, 2023, available at:
+  \url{https://doi.org/10.48550/arXiv.2307.09288}.
 
 \end{thebibliography}
