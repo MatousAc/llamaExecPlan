@@ -22,3 +22,11 @@ SQuAD/
 customData/
 data/
 !nkjv.csv
+
+# latex
+*/*.out
+*/*.fls
+*/*.aux
+*/*.log
+*/*.fdb_latexmk
+*/*.syntex.gz
