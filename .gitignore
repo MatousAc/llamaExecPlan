@@ -20,7 +20,9 @@ baseModels/
 # data
 SQuAD/
 customData/
-data/
+# we're versioning && sharing
+# data for this project
+data/logs/
 !nkjv.csv
 
 # latex
