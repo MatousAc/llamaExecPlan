@@ -1,6 +1,6 @@
 # import libraries we need
 import torch
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from configBase import ConfigBase
 from dataFormatter import DataFormatter
 from timeLogger import TimeLogger
@@ -10,24 +10,15 @@ class Inferer(ConfigBase):
     self.timer = TimeLogger()
 
   def loadModel(self):
-    # quantized LoRA (QLoRA) - uses 4-bit normal float to lighten GPU/CPU load
-    self.bnbConfig = BitsAndBytesConfig(
-      load_in_4bit = True,
-      # we leave the model quantized in 4 bits
-      bnb_4bit_quant_type = 'nf4',
-      bnb_4bit_compute_dtype = torch.float16
-    )
-    
     # load our model
-    self.baseModel = AutoModelForCausalLM.from_pretrained(
-      pretrained_model_name_or_path=self.paths['base'],
-      quantization_config=self.bnbConfig,
+    self.model = AutoModelForCausalLM.from_pretrained(
+      pretrained_model_name_or_path=self.paths['model'],
       device_map='auto'
     )
-    self.baseModel.config.use_cache = False
+    self.model.config.use_cache = False
 
     # load our tokenizer
-    self.tokenizer = AutoTokenizer.from_pretrained(self.paths['base'])
+    self.tokenizer = AutoTokenizer.from_pretrained(self.paths['model'])
     self.tokenizer.pad_token = self.tokenizer.eos_token
 
   def detokenize(self, tokens):
@@ -36,7 +27,7 @@ class Inferer(ConfigBase):
     
   # testing the models
   def inference(self):
-    inferenceInput = self.dataFormatter.getInferenceInput(self.df)
+    inferenceInput = self.dataFormatter.getInferenceInput()
     modelInput = self.tokenizer(inferenceInput, return_tensors='pt').to('cuda')
 
     self.timer.start()

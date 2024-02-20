@@ -5,7 +5,6 @@ import time
 class TimeLogger(ConfigBase):
   def configure(self):
     self.logDir = self.paths['log']
-    print(self.logDir)
     self.startTime = None
     self.stopTime = None
     self.timing = False
@@ -27,9 +26,9 @@ class TimeLogger(ConfigBase):
     self.stopTime = time.time()
     self.timing = False
     elapsedSeconds = self.stopTime - self.startTime
-    model = self.paths["baseModel"].split("/")[-1]
+    model = self.paths["model"].split("/")[-1]
     if log:
-      f = open(f'{self.logDir}/baseModelExecutionTime.txt', "a")
+      f = open(f'{self.logDir}/ExecutionTime.txt', "a")
       f.write(f'{model}, {round(elapsedSeconds, 3)}\n')
       f.close()
     return elapsedSeconds

@@ -23,7 +23,7 @@ class ConfigBase:
     self.quiet = self.genCf['quiet'] == 'True'
 
     # get terminal size for prettified output
-    self.vw = os.get_terminal_size().lines
+    self.vw = os.get_terminal_size().columns
     if dataFormatter: self.dataFormatter = dataFormatter
     self.configure()
   
@@ -48,7 +48,7 @@ class ConfigBase:
       sys.stdout.flush()
 
   def printHeader(self, str):
-    side = '~' * int(0.5 * self.vw)
+    side = '~' * int(0.48 * (self.vw - len(str)))
     print(f'\n{side} {str} {side}')
   
 if __name__ == '__main__':
