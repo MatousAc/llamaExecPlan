@@ -4,27 +4,29 @@ import pyperclip as clip
 text = clip.paste()
 
 def cleanPlan(query):
-  # rm unnecessary syntax
-  query = re.sub(r'[ \t]*(\|(--)?)|(\[sauAttendance\]\.\[dbo\]\.)', '', query)
   # rm square brackets
   query = re.sub(r'\[([^\]]+)\]', r'\1', query)
+  # rm unnecessary syntax
+  query = re.sub(r'[ \t]*(\|(--)?)|(sauAttendance\.dbo\.)', '', query)
+  query = re.sub(r'attendanceDB\.dbo\.([a-zA-Z]+)\.PK__?[a-zA-Z]+(?:__)?[^ ]*', r'\1', query)
+  query = re.sub(r'attendanceDB\.dbo\.([^ ]+) as ([^ ])', r'\1 as \2', query)
 
   # remove unnecessary entities
-  query = re.sub(r',? *RESIDUAL:.*?DEFINE:.*?\)', '', query)
-  # query = re.sub(r',? *WHERE:\(PROBE\([^\)]*\)[^\)]*\)', '', query)
-  query = re.sub(r',? *OPT_Bitmap\d+', '', query)
-  query = re.sub(r'OBJECT:', '', query)
+  query = re.sub(r',? *residual:.*?define:.*?\)', '', query, flags = re.I)
+  query = re.sub(r',? *opt_bitmap\d+,?', '', query, flags = re.I)
+  query = re.sub(r'object:', '', query, flags = re.I)
   # rm multiple parentheses
   query = re.sub(r'\(\(([^)]+)\)\)', r'(\1)', query)
-  # collapse multiple \n
-  print(query)
-  query = query.replace('\n\n', '\n')
-  query = query.replace('\n\n', '\n')
-  print(query)
-  # reverse and rm newlines
-  steps = query.split('\n')[::-1]
+  # rm empty f(x)s
+  query = re.sub(r',?[a-zA-Z]+:\(\)', r'', query)
+  
+  # reverse and rm line breaks
+  steps = query.split('\r\n')[::-1]
   steps = [f'{num + 1}: {q}' for num, q in enumerate(steps)]
-  query = ' # '.join(steps)
+  query = '\\n# '.join(steps)
+  query = '# ' + query
+
+  # rm extra specifiers
   return query
 
 # cleaned output
