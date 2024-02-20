@@ -1,13 +1,20 @@
 # import libraries we need
 from configBase import ConfigBase
-import time
+import time, os
 
 class TimeLogger(ConfigBase):
   def configure(self):
     self.logDir = self.paths['log']
+    self.logFile = f'{self.logDir}/ExecutionTime.txt'
     self.startTime = None
     self.stopTime = None
     self.timing = False
+    # first-time setup
+    if not os.path.isfile(self.logFile):
+      os.makedirs(self.logDir, exist_ok=True)
+      f = open(self.logFile, "w")
+      f.write('model, seconds\n')
+
     
   def start(self):
     if self.timing:
@@ -28,7 +35,7 @@ class TimeLogger(ConfigBase):
     elapsedSeconds = self.stopTime - self.startTime
     model = self.paths["model"].split("/")[-1]
     if log:
-      f = open(f'{self.logDir}/ExecutionTime.txt', "a")
+      f = open(self.logFile, "a")
       f.write(f'{model}, {round(elapsedSeconds, 3)}\n')
       f.close()
     return elapsedSeconds

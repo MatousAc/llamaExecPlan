@@ -4,38 +4,21 @@ This directory includes several complex environments. You should be able to use 
 ```
 conda create --name <envName> --file <envName>.yml
 ```
-The two environments available in this folder are for the SoC GPUs and for a local (conda) python installation. The `cuda` version is for the SoC.
+The two environments available in this folder are for the SoC GPUs and for a local (conda) python installation. The `cuda` version is for the SoC GPUs. Note that you may have to install some cuda toolkit software before the environment installs correctly.
 
 Here is an explanation of each saved environment:
 ### Current envs
-* [llamaInferenceCuda.yml](env/llamaInferenceCuda.yml) - main environment to use for this repository and thesis. use this for training LLaMA 2 with the trainer, data formatter, data processor, and other scripts in the `src/` directory.
-* [llamaInference.yml](env/llamaInference.yml) - the non-cuda, local version of the environment. should allow for data processing and inference based on the final model
-
-## Start from scratch
-Try not to choose this option, it has not been updated in a while.
-Otherwise start a conda environment from scratch with:
-
-```
-conda create -n llamaInference
-conda activate llamaInference
-conda install python=3.11.5
-```
-
-Install the python packages that you need.
-
-For LLaMA 2 training:
-```
-pip install datasets evaluate huggingface numpy pandas transformers tokenizers torch
-```
+* [llamaInferenceCuda.yml](env/llamaInferenceCuda.yml) - main environment to use for inference. use this when you run [inferer.py](src/inferer.py)
+* [llamaInference.yml](env/llamaInference.yml) - the non-cuda, local version of the environment. should allow for data processing and running of various scripts for this project
 
 # Running inference
-To run the model just interpret [inferer.py](src/inferer.py). You will be in an inference loop.
+To run the model just interpret [inferer.py](src/inferer.py). You will be in an inference loop. If in prompt generation mode, all you have to do is press enter to prompt the model.
 
-The configuration for the project is in [config.ini](src/config.ini), and the data will be kept in the [data](data/) folder.
+The configuration for the project is in [config.ini](src/config.ini). This file determines the current model source, data source, and inference prompt used. Data && logs are kept in the [data](data/) folder.
 
 # DB Setup
 * Use [sauAttendance.yml](env/sauAttendance.yml) to pull up a docker container of SQL Server locally. Instructions for running are in [sauAttendance.yml](sauAttendance.yml).
-* 
+* Not sure yet what to do from here.
 
 # Report
-The latex for the report is located in the [report](report/) folder, and all supporting articles and research lives in the [research](research/) folder. [resources](resources/) is for miscellaneous project resources.
+The latex for the report is located in the [report](report/) folder. The main files are in [report](report/) while all the report content is divided into section in the [setions](report/sections/) folder. All supporting articles and research lives in the [research](research/) folder. [resources](resources/) is for miscellaneous project resources.
