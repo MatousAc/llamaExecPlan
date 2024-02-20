@@ -14,7 +14,9 @@ def cleanPlan(query):
   # remove unnecessary entities
   query = re.sub(r',? *residual:.*?define:.*?\)', '', query, flags = re.I)
   query = re.sub(r',? *opt_bitmap\d+,?', '', query, flags = re.I)
-  query = re.sub(r'object:', '', query, flags = re.I)
+  query = re.sub(r'object:', r'', query, flags = re.I)
+  # clean up 'N' in front of strings
+  query = re.sub(r"N('[^']')", r'\1', query, flags = re.I)
   # rm multiple parentheses
   query = re.sub(r'\(\(([^)]+)\)\)', r'(\1)', query)
   # rm empty f(x)s
