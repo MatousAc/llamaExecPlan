@@ -32,7 +32,7 @@ class Inferer(ConfigBase):
   def detokenize(self, tokens):
     with torch.no_grad():
       return self.tokenizer.decode(tokens, skip_special_tokens=True)
-    
+  
   # testing the models
   def inference(self):
     inferenceInput = self.dataFormatter.getInferenceInput()
