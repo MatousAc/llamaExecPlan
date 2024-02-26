@@ -1,3 +1,8 @@
 \section{State of the Art}
+In their ``AI Meets Database: AI4DB and BD4AI'' paper, Li, Zhou and Cao identify three primary ways artificial intelligence is being used to optimize database performance \cite{li2021}: cost estimation, join order, and complete optimization. Cost estimation plays a major role in join order selection, as performing joins and filters on smaller tables before larger ones decreases search times and memory usage. A query's execution plan can vary in many fundamental and nuanced characteristics, yielding millions of execution options. Thus, certain AI-based algorithms have also been used in this area to quickly arrive at an approximately optimal plan.
 
-\subsection{test}
+In 2019, Ji Sun and Guoliang Li implemented an advanced cost estimation model \cite{sun2019}. This model consisted of three layers to handle embedding, high-level query representation, and output. In order to capture the tree-like requirements of most queries and their execution plans, the model's structure was tree-based and allowed nodes to learn their subnodes' execution plans. Once this structure was achieved in the representation-layer, the estimation layer was able to produce more accurate costs than several baselines. Nevertheless, this approach suffers from needing to train a database-specific model for each application. Thus, it exchanges accuracy for generality.
+
+Wang et al. explore another aspect relating to our research in their development of LANTERN, a tool for explaining SQL query execution plans \cite{wang2021}. While achieving an 86\% success rate in a related task, this study only describes query execution plans rather than generating them. It is useful for human learners, but not for database management systems (DBMS).
+
+Another paper did this. It differs from what we're doing like this. Etc.
