@@ -6,6 +6,9 @@ from dataFormatter import DataFormatter
 from timeLogger import TimeLogger
 
 class Inferer(ConfigBase):
+  # a srtring variable that holds the conversation throughout inference
+  conversation = ''
+  
   def configure(self):
     self.timer = TimeLogger()
 
@@ -33,26 +36,34 @@ class Inferer(ConfigBase):
     with torch.no_grad():
       return self.tokenizer.decode(tokens, skip_special_tokens=True)
   
+  def extendConversation(self, nextPrompt):
+    # initial prompt
+    if not self.conversation:
+      systemPrompt = open('sysPrompt.txt').read()
+      self.conversation = f'<s>[INST] <<SYS>>\n{systemPrompt}\n<</SYS>>\n\n{nextPrompt} [/INST]'
+    else: self.conversation += f' </s><s>[INST] {nextPrompt} [/INST]'
+  
   # testing the models
   def inference(self):
-    inferenceInput = self.dataFormatter.getInferenceInput()
-    modelInput = self.tokenizer(inferenceInput, return_tensors='pt').to('cuda')
+    nextPrompt = self.dataFormatter.getPrompt()
+    self.extendConversation(nextPrompt)
+    modelInput = self.tokenizer(self.conversation, return_tensors='pt').to('cuda')
 
     self.timer.start()
     self.model.eval()
     with torch.no_grad(): # grad only used in training
       tokens = self.model.generate(**modelInput, max_new_tokens=100)[0]
-      print(self.detokenize(tokens))
-    self.timer.stop()
-    
-    print('~' * self.vw)
+      response = self.detokenize(tokens).split('[/INST]')[-1]
+      self.timer.stop()
+      self.conversation += response
+      print(f'Llama: {response}')
   
   def inferenceLoop(self):
     self.printHeader('Testing Loop')
     print('Ctrl+C to exit')
     try:
       while True: self.inference()
-    except KeyboardInterrupt: print('\rClosing\n')
+    except KeyboardInterrupt: self.printHeader('Closing')
     except: raise # rethrow
 
 
