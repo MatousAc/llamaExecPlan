@@ -1,0 +1,36 @@
+\section{Theoretical Framework}\label{sec:theoryFrames}
+This section provides a brief explanation of the key concepts used in this research. Figure \ref{fig:conceptMap} summarizes the various concepts and their relationships.
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{figures/llamaInferenceConceptMap.png}
+  \caption{Concept map}
+  \label{fig:conceptMap}
+\end{figure*}
+
+
+\subsection{Natural Language Processing}
+LLM inference belongs to a broad field of problems involving machines and human language. These problems can be divided into several categories.
+
+K. R. Chowdhary defines one category, natural language processing (NLP), as ``a collection of computational techniques for automatic analysis and representation of human languages, motivated by theory'' \cite{chowdhary2020}. NLP ranges from simpler functionality such as spell checking to more challenging problems like the retrieval of important information. Some NLP problems can be further categorized under natural language understanding (NLU). NLU is a more advanced form of NLP in which machines understand language using background information much like humans do. NLU requires semantic information, abstract concepts, and various modules.
+
+Chowdhary separates natural language generation (NLG), also called inference, from NLP, categorizing both as branches of computational linguistics. While NLP is focused on language analysis, NLG involves machines writing human language rather than just reading and understanding it.
+
+While these categories have different goals, NLG is interconnected with NLP. To generate text, a machine must first achieve a level of NLU. Because inference requires a machine to generate natural language to achieve the desired output, it is considered part of NLG.
+
+\subsection{AI Models}
+Stanford University's Human-Centered Artificial Intelligence (HAI) institute cites the original definition of artificial intelligence (AI), ``the science and engineering of making intelligent machines,'' coined by John McCarthy in 1955\footnote{\href{https://hai.stanford.edu/sites/default/files/2020-09/AI-Definitions-HAI.pdf}{hai.stanford.edu}}. This definition relies on the definition of intelligence, which the HAI defines as the ability to learn. Hence, it follows that \textit{artificial} intelligence is identified by a machine's ability to learn.
+
+In \textit{Machine Learning: An Artificial Intelligence Approach} \cite{michalski2014}, Michalski et al. introduce the necessity of this type of learning by explaining that some tasks are simply too difficult to ``laboriously program'' into a computer. In other words, AI allows computers to perform tasks that humans perform but cannot fully articulate algorithmically. Rather than explicitly programming billions of decisions with conditional statements (\textit{if} this \textit{then} do that), machine learning allows a computer to ``learn by example'' and program these ``decisions'' automatically.
+
+\subsection{Huggingface}
+Due to the various state-of-the-art algorithms and resources included in LLM fine-tuning, research works commonly use Python for configuring their training experiments Python simplifies the implementation of these algorithms and the access to these resources through its vast amount of useful AI and data management libraries. For AI tasks, we plan to utilize a family of libraries released by HuggingFace\footnote{\url{https://huggingface.co/}} centered around the transformers library \cite{wolf2020}. To clean and format data we will use the Python libraries \lstinline{pandas} and \lstinline{numpy}.
+
+\subsection{Model Input}
+We hypothesize that an LLM requires two types of input to generate an execution plan: database descriptors and the query to be optimized.
+
+\subsubsection{Database Descriptors}
+We plan to provide the model with a brief description of the database it is working with. This description will include table columns and relationships as well as brief statistics about the size of those tables (to simulate) cardinality estimation.
+
+\subsubsection{Queries}
+The fundamental goal of this research is to transform SQL queries into DBMS execution plans. Therefore, each prompt must include a valid query to translate. For the purpose of consistency and quality, we utilize one university database to author several (around one hundred) SQL queries. We also collect Microsoft SQL Server's execution plan for these queries to use for comparison and evaluation.
