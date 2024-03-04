@@ -16,23 +16,24 @@ class DataFormatter(ConfigBase):
   def getRow(self, row = None):
     if not row: row = random.randrange(len(self.data))
     return self.data.iloc[row]
-  
-  def getInferenceInput(self):
+    
+  def getPrompt(self):
     '''returns a prompt for inference'''
     sampleMode = self.dfCf['sampleMode']
     match sampleMode:
       case 'generate':
-        input()
+        input(f'Press enter to generate: ')
         template = self.inputTemplate
       case 'manual':
-        template = input(f'> ')
-        print('↓')
+        template = input(f'You: ')
     template = template.replace('<query>', self.getRow()['query'])
     template = template.replace('<execPlan>', '')
-    return template.strip()
+    template = template.strip()
+    if sampleMode == 'generate': print(f'\r{template}')
+    return template
 
 if __name__ == '__main__':
   df = DataFormatter()
   df.printHeader('Testing DataFormatter')
   print(df.getRow())
-  print(df.getInferenceInput())
+  print(df.getPrompt())
