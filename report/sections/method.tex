@@ -58,6 +58,52 @@ The \lstinline{DataFormatter} class leverages this configuration to prepare and 
 
 This architecture not only enables the systematic generation of execution plans by the LLM but also provides a framework for evaluating the model's performance and effectiveness in optimizing SQL queries. Through this setup, we aim to explore the potential of LLMs in automating and enhancing database management tasks, contributing to the broader field of applying machine learning techniques to database optimization and management.
 
+\begin{lstlisting}[
+  language=Python,
+  caption={loadModel},
+  label={lst:loadModel}
+]
+def loadModel(self):
+  # quantized LoRA (QLoRA) - uses 4-bit normal float to lighten GPU/CPU load
+  self.bnbConfig = BitsAndBytesConfig(
+    load_in_4bit = True,
+    # we leave the model quantized in 4 bits
+    bnb_4bit_quant_type = 'nf4',
+    bnb_4bit_compute_dtype = torch.float16
+  )
+  # load our model
+  self.model = AutoModelForCausalLM.from_pretrained(
+    pretrained_model_name_or_path=self.paths['model'],
+    quantization_config=self.bnbConfig,
+    device_map='auto'
+  )
+  self.model.config.use_cache = False
+
+  # load our tokenizer
+  self.tokenizer = AutoTokenizer.from_pretrained(self.paths['model'])
+  self.tokenizer.pad_token = self.tokenizer.eos_token
+\end{lstlisting}
+
+\begin{lstlisting}[
+  language=Python,
+  caption={inference},
+  label={lst:inference}
+]
+def inference(self):
+    nextPrompt = self.dataFormatter.getPrompt()
+    self.extendConversation(nextPrompt)
+    modelInput = self.tokenizer(self.conversation, return_tensors='pt').to('cuda')
+
+    self.timer.start()
+    self.model.eval()
+    with torch.no_grad(): # grad only used in training
+      tokens = self.model.generate(**modelInput, max_new_tokens=100)[0]
+      response = self.detokenize(tokens).split('[/INST]')[-1]
+      self.timer.stop()
+      self.conversation += response
+      print(f'Llama: {response}')
+\end{lstlisting}
+
 \subsubsection{Database Descriptors}
 We plan to provide the model with a brief description of the database it is working with. This description will include table columns and relationships as well as brief statistics about the size of those tables (to simulate) cardinality estimation.
 
