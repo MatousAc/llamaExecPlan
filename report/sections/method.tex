@@ -1,1 +1,10 @@
 \section{Methodology}
+\subsection{Model Input}
+We hypothesize that an LLM requires two types of input to generate an execution plan: database descriptors and the query to be optimized.
+
+\subsubsection{Database Descriptors}
+We plan to provide the model with a brief description of the database it is working with. This description will include table columns and relationships as well as brief statistics about the size of those tables (to simulate) cardinality estimation.
+
+\subsubsection{Queries}
+The fundamental goal of this research is to transform SQL queries into DBMS execution plans. Therefore, each prompt must include a valid query to translate. For the purpose of consistency and quality, we utilize one university database to author several (around one hundred) SQL queries. We also collect Microsoft SQL Server's execution plan for these queries to use for comparison and evaluation.
+
