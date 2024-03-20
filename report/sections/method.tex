@@ -6,6 +6,7 @@ We hypothesized that an LLM would require two types of input to generate an exec
 
 \begin{lstlisting}[
   language=yaml,
+  style=lightBlock,
   caption={sauAttendance.yml file used with \lstinline{docker-compose}},
   label={lst:sauAttendance.yml}
 ]
@@ -104,15 +105,11 @@ The data cleaning was automated with \lstinline{sqlPlanCleaner.py}, shown in Lis
 \begin{lstlisting}[
   language=python,
   style=fullPython,
-  caption={Data cleaning with \lstinline{sqlPlanCleaner.py}},
+  caption={Data cleaning with the \lstinline{cleanPlan} function},
   label={lst:sqlPlanCleaner}
 ]
 import re
-import pyperclip as clip
-
-text = clip.paste()
-
-def cleanPlan(query):
+def cleanPlan(query: str) -> str:
   # 1. rm square brackets
   query = re.sub(r'\[([^\]]+)\]', r'\1', query)
   # 2. rm unnecessary syntax
@@ -136,15 +133,7 @@ def cleanPlan(query):
   steps = [f'{num + 1}: {q}' for num, q in enumerate(steps)]
   query = '\\n# '.join(steps)
   query = '# ' + query
-
-  # 8. rm extra specifiers
   return query
-
-# cleaned output
-out = cleanPlan(text)
-print(out)
-
-clip.copy(out)
 \end{lstlisting}
 
 \subsubsection{Database Information}
@@ -168,16 +157,49 @@ To generate an execution plan, any system would require information about the da
 \end{text}
 
 \subsection{Model Operation}
-The next step is to prompt the LLM with a query and database description. Our suite of Python scripts and configuration files orchestrates the entire process, from configuring the system and formatting data to performing inference and logging results. The core components include a configuration base, which centralizes the management of system settings and paths as defined in \lstinline{config.ini}, ensuring a flexible and adaptable environment for different experimental setups.
+The next step is to prompt the LLM with a query and database description. Our suite of Python scripts and configuration files orchestrates the entire process, from configuring the system and formatting data to performing inference and logging results. See Figure \ref{fig:classDiagram} for a class diagram.
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.48\textwidth]{figures/classDiagram.png}
+  \caption{A UML diagram of the classes used in this experiment.}
+  \label{fig:classDiagram}
+\end{figure}
 
-The \lstinline{DataFormatter} class leverages this configuration to prepare and format SQL queries from a dataset, creating prompts that are fed into the LLM. This preparation involves embedding queries within a structured template that guides the LLM's generation process, aiming for consistency and relevance in the generated execution plans. The \lstinline{Inferer} class then takes center stage by loading the LLM and its tokenizer, facilitating the inference process. It sends formatted prompts to the LLM, receives the generated execution plans, and manages the iterative conversation with the model, ensuring that each query is processed and its corresponding plan is generated accurately. Additionally, the \lstinline{TimeLogger} class provides performance metrics by timing the inference process, offering insights into the efficiency of the model under various conditions.
-
-This architecture not only enables the systematic generation of execution plans by the LLM but also provides a framework for evaluating the model's performance and effectiveness in optimizing SQL queries. Through this setup, we aim to explore the potential of LLMs in automating and enhancing database management tasks, contributing to the broader field of applying machine learning techniques to database optimization and management.
+The first core component is the configuration base class, \lstinline{configBase.py}, which centralizes the management of system settings and paths as defined in the \lstinline{config.ini} file, ensuring a flexible and adaptable environment for different experimental setups. Listing \ref{lst:configBase} contains an example from \href{https://github.com/MatousAc/llamaExecPlan/blob/main/src/configBase.py}{configBase.py}. Notice the \lstinline{configure} function that is called but does nothing. This function is meant to be overriden in derived classes, but will still be automatically called upon object construction.
 
 \begin{lstlisting}[
   language=Python,
   caption={loadModel},
-  label={lst:loadModel}
+  label={lst:configBase}
+]
+import os, sys
+from configparser import ConfigParser
+
+class ConfigBase:
+  def __init__(self, configFilePath):
+    base = os.path.normpath(os.getcwd())
+    self.cp = ConfigParser()
+    self.cp.read(configFilePath)
+
+    self.paths = self.cp['paths']
+    for path in self.paths:
+      # prepend base to each path
+    
+    # set up general other configuration
+    self.gen = self.cp['general']
+    self.q = self.gen['q'] == 'True'
+    self.configure()
+  
+  def configure(self):
+    pass
+\end{lstlisting}
+
+The \lstinline{Inferer} class takes center stage by loading the LLM and its tokenizer and facilitating the inference process. These operations are shown in Listing \ref{lst:inferer}. The \lstinline{Inferer} requests query examples from the \lstinline{DataFormatter} and then formats prompts for the LLM. It also manages the iterative conversation with the model, ensuring that after each query is processed only the output is appended to the growing conversation.
+\begin{lstlisting}[
+  language=Python,
+  style=fullPython,
+  caption={loadModel},
+  label={lst:inferer}
 ]
 def loadModel(self):
   # quantized LoRA (QLoRA) - uses 4-bit normal float to lighten GPU/CPU load
@@ -195,16 +217,10 @@ def loadModel(self):
   )
   self.model.config.use_cache = False
 
-  # load our tokenizer
+  # load tokenizer
   self.tokenizer = AutoTokenizer.from_pretrained(self.paths['model'])
   self.tokenizer.pad_token = self.tokenizer.eos_token
-\end{lstlisting}
 
-\begin{lstlisting}[
-  language=Python,
-  caption={inference},
-  label={lst:inference}
-]
 def inference(self):
     nextPrompt = self.dataFormatter.getPrompt()
     self.extendConversation(nextPrompt)
@@ -214,9 +230,28 @@ def inference(self):
     self.model.eval()
     with torch.no_grad(): # grad only used in training
       tokens = self.model.generate(**modelInput, max_new_tokens=100)[0]
-      response = self.detokenize(tokens).split('[/INST]')[-1]
+      response = self.tokenizer.decode(tokens, skip_special_tokens=True)
+      response = response.split('[/INST]')[-1]
       self.timer.stop()
       self.conversation += response
       print(f'Llama: {response}')
+
+if __name__ == '__main__':
+  trainer = Inferer()
+  trainer.loadModel()
+  trainer.inference()
 \end{lstlisting}
+
+The \lstinline{DataFormatter} class, on the other hand, provides the \lstinline{Inferer} prepare and format SQL queries from a dataset, creating prompts that are fed into the LLM. When the Inferer. This preparation involves embedding queries within a structured template (taken from \lstinline{config.ini} and shown in Text \ref{text:inputTemplate}) that guides the LLM's generation process, aiming for consistency and relevance in the generated execution plans.
+\begin{text}
+  inputTemplate: $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: $<$query$>$ \#\#\# Execution Plan: $<$execPlan$>$
+  \caption{Model prompt template}
+  \label{text:inputTemplate}
+\end{text}
+
+Finally the \lstinline{TimeLogger} class provides performance metrics alongside the \lstinline{Inferer} class by timing the inference process. This offers insights into the efficiency of the model under various conditions.
+
+Using the \lstinline{Inferer}'s \lstinline{inference()} function and its dependencies, our experiments can be run by simply modifying the input template in \lstinline{config.ini} and then testing inference using \lstinline{python inferer.py}.
+
+This hierarchical but compartmentalized architecture not only enables the systematic generation of execution plans by the LLM but also provides a framework for evaluating the model's performance and effectiveness in optimizing SQL queries. Through this setup, we are able to easily prompt the model to explore the potential of LLMs in automating and enhancing query execution plans, contributing to the broader field of applying machine learning techniques to database optimization and management.
 

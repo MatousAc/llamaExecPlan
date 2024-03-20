@@ -1,0 +1,7 @@
+// {type: class}
+// {direction: leftToRight}
+[ConfigBase|+cp:ConfigParser +gen:dict +q:str|+configure() +printHeader() +ignoreWarnings()]^-[Inferer|+conversation:str +timer:TimeLogger|+configure() +loadModel() +extendConvo() +inferenceLoop() +inference() +detokenize()]
+[ConfigBase]^-[DataFormatter|+dfCf:dict +delim:str +inputTemplate:str|+configure() +loadData() +getRow() +getPrompt()]
+[ConfigBase]^-[TimeLogger|+logDir:str +logFile:str +startTime:float +stopTime:float +timing:bool|+start() +stop()]
+[TimeLogger]<-[Inferer]
+[DataFormatter]<-[Inferer]

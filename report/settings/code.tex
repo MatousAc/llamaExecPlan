@@ -48,7 +48,6 @@
   backgroundcolor=\color{white},
   commentstyle=\color{codegreen},
   keywordstyle=\color{magenta},
-  numberstyle=\tiny\color{codegray},
   stringstyle=\color{codepurple},
   basicstyle=\ttfamily,
   breakatwhitespace=false,
@@ -59,9 +58,17 @@
   showstringspaces=false,
   showtabs=false,
   tabsize=2,
-  numbers=left,
-  frame=single
+  numbers=none,
+  frame=tb
 }
+
+
+% listings to top of page style
+\lstdefinestyle{fullWidth}{
+  float=*t,
+  floatplacement=tbp
+}
+
 
 \lstdefinestyle{fullPython}{
   style=python,
