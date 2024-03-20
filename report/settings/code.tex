@@ -5,7 +5,37 @@
 
 \lstset{language=Python, upquote=true}
 
-% yaml
+% top and bottom border, no numbers
+\lstdefinestyle{lightBlock}{frame=tb, numbers=none}
+
+% sql
+\lstdefinestyle{sqlStyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{codepurple},
+  numberstyle=\numberstyle,
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize\ttfamily,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=none,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=tb
+}
+
+\newcommand\numberstyle[1]{%
+  \footnotesize
+  \color{codegray}%
+  \ttfamily
+  \ifnum#1<10 0\fi#1 |%
+}
+
+
+% python
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
@@ -31,6 +61,11 @@
   tabsize=2,
   numbers=left,
   frame=single
+}
+
+\lstdefinestyle{fullPython}{
+  style=python,
+  style=fullWidth
 }
 
 \lstset{style=python}
