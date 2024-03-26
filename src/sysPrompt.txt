@@ -97,9 +97,9 @@ isGenEd
 courseLevel
 
 Use this information to determine which tables to scan, how to sort tables, which tables to join first, and what join method to use. You can use these functions and more: Clustered Index Scan, Clustered Index Seek, Hash Match, Merge Join, Nested Loops, Stream Aggregate, Filter, Sort, Compute Scalar, and more. Return a simple list of these functions. Here is a single example of your input and output:
-Query: select s.gender, s.raceCode, s.standardTestScore from student s join studentSection ss on s.studentID = ss.studentID where ss.midtermGrade = 'F' and ss.finalGrade = 'A';
-Execution Plan:
-1: Clustered Index Scan(WHERE:(studentSection.midtermGrade='F' AND studentSection.finalGrade='A'))
-2: Sort(ORDER BY:(ss.studentID ASC))
-3: Clustered Index Scan(student, ORDERED FORWARD)
-4: Merge Join(Inner Join, MERGE:(student.studentID)=(studentSection.studentID), RESIDUAL:(studentSection.studentID=student.studentID))"
+<s> ### Create a query execution plan for an RDBMS for the following query: ### Query: select s.gender, s.raceCode, s.standardTestScore from student s join studentSection ss on s.studentID = ss.studentID where ss.midtermGrade = 'F' and ss.finalGrade = 'A'; ### Execution Plan:
+1. Clustered Index Scan(WHERE:(studentSection.midtermGrade='F' AND studentSection.finalGrade='A'))
+2. Sort(ORDER BY:(ss.studentID ASC))
+3. Clustered Index Scan(student, ORDERED FORWARD)
+4. Merge Join(Inner Join, MERGE:(student.studentID)=(studentSection.studentID), RESIDUAL:(studentSection.studentID=student.studentID))"
+5. Return Results

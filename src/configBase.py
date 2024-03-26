@@ -5,17 +5,17 @@ class ConfigBase:
   def __init__(self, configFilePath = '/src/config.ini', dataFormatter = None):
     # get repo base path
     repo = 'llamaExecPlan'
-    basePath = f'{os.getcwd().split(repo)[0]}{repo}'
-    basePath = os.path.normpath(basePath)
+    self.basePath = f'{os.getcwd().split(repo)[0]}{repo}'
+    self.basePath = os.path.normpath(self.basePath)
     # get config
     self.cp = ConfigParser(interpolation=ExtendedInterpolation())
-    self.cp.read(os.path.normpath(basePath + configFilePath))
+    self.cp.read(os.path.normpath(self.basePath + configFilePath))
 
     # configure all paths to include base path
     # and normalize them for the current OS
     self.paths = self.cp['paths']
     for path in self.paths:
-      self.paths[path] = os.path.normpath(basePath + self.paths[path])
+      self.paths[path] = os.path.normpath(self.basePath + self.paths[path])
     
     # set up general other configuration
     self.genCf = self.cp['general']
