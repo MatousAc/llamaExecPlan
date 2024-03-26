@@ -22,6 +22,7 @@ customData/
 # we're versioning && sharing
 # data for this project
 data/logs/
+src/log/
 !nkjv.csv
 
 # latex
