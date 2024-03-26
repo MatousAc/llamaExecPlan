@@ -7,19 +7,18 @@
 # password: (below)
 
 # if not trying to preserve data, comment out the volumes sections
+# if starting over, there should be a backup tar file which you can load to the volumes form in the db/sauAttendance folder
 
 version: '3.8'
 
-name: sauDB
+name: sau-db
 services:
   mssql:
     container_name: attendanceDB
     image: mcr.microsoft.com/mssql/server
-    # hostname: sqlpreview
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "_nam3685"
-      # MSSQL_PID: Evaluation
     ports:
       - 1433:1433
     volumes:

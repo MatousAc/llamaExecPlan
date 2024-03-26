@@ -1,1 +1,91 @@
 \section{Results}
+\subsection{Result Generation}
+We began basic experiments by simply prompting the model to generate execution plans. As we can see in Text \ref{text:basicConvo}, there is much roo for improvement.
+
+\begin{text}
+  $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: select avg(c.credits) as 'creditAverage' from section se join course c on se.courseID = c.courseID; \#\#\# Execution Plan: [/INST]  Sure! Here's an execution plan for the query you provided:
+
+  1. Clustered Index Scan(WHERE: (courseID = 1))
+  * This is the most efficient way to access the course table, as it uses a clustered index to quickly locate the rows that match the condition.
+  2. Inner Join(Seek)
+  * This join is used to join the section table with the course table on the courseID column. Since $<$/s$>$$<$s$>$[INST] $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: select p.professorName, r.building, count(r.roomNumber) as 'numberOfRooms' from professor p join section se on p.professorID = se.professorID join room r on se.roomID = r.roomID group by r.building, p.professorName; \#\#\# Execution Plan: [/INST]  Great, let's create an execution plan for the query you provided:
+
+  1. Clustered Index Scan(WHERE: (professorID = 1))
+  * This is the most efficient way to access the professor table, as it uses a clustered index to quickly locate the rows that match the condition.
+  2. Inner Join(Seek)
+  * This join is used to join the section table with the professor table on the professorID column
+  \caption{One of the earliest experiment's outputs}
+  \label{text:basicConvo}
+\end{text}
+
+Although the model does begin to produce an execution plan, it always gets caught up in explaining each step and then reaches the max allowed tokens it can generate before finishing a full execution plan. To mitigate this issue, we first attempted to request the model to continue its output in another generation. We can see the results of one such example in Text \ref{text:continuedConvo}.
+
+\begin{text}
+  $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: select p.professorName, r.roomNumber from professor p join section se on p.professorID = se.professorID join room r on se.roomID = r.roomID where r.building = 'Hickman Science Center'; \#\#\# Execution Plan:
+  Llama:   Sure! Here's the execution plan for the query you provided:
+
+  1. Clustered Index Scan(WHERE: (room.building = 'Hickman Science Center'))
+  2. Filter(WHERE: (se.roomID = r.roomID))
+  3. Inner Join(On: (p.professorID = se.professorID))
+  4. Inner Join(On: (r.roomID = se.roomID))
+  Press enter to generate or type continue to prompt the model to continue: continue
+  Please continue the execution plan.
+  Llama:   Of course! Here's the rest of the execution plan:
+
+  5. Sort(ORDER BY: (se.roomID ASC))
+  6. Clustered Index Seek(WHERE: (se.roomID = r.roomID))
+  7. Return the results
+
+  In this execution plan, the query starts by scanning the `room` table using a clustered index scan to find all the rows that match the `building` filter. Then, it uses
+  \caption{Asking the model to continue output}
+  \label{text:continuedConvo}
+\end{text}
+
+When we prompted the model to continue, it successfully finished producing what it regarded as a complete execution plan. Moreover, because the execution plan is consistently formatted as a numbered list it can be extracted out of the plaintext output and reduced to a preliminary execution plan with various functions and tables.
+
+Using the prompt in Text \ref{text:continuationPrompt}, we asked the model to continue its output if necessary and designate the end of its execution plan with ``Return Results'' (see the \lstinline{resRe} variable below).
+
+\begin{text}
+  Please continue with the next step of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
+  \caption{The prompt used to request the model to continue its execution plan}
+  \label{text:continuationPrompt}
+\end{text}
+
+\begin{lstlisting}[
+  language=Python,
+  caption={A simplified view of the evalGen function used for automatic continuation of execution plan generation.},
+  label={lst:autoContinuation}
+]
+def evalGen(self):
+  output = pd.DataFrame()
+  resRe = r'Return(\sResults)?'
+  stepRe = r'\d.?\s(?P<stepText>.*)'
+  for row in data.iterrows():
+    prmt = getPrompt(template, row)
+    out = self.inference(prmt)
+    runsLeft = 7
+    done = re.search(resRe, out) != None
+    while not done and runsLeft > 0:
+      prmt = getPrompt(template, row)
+      out = self.inference(prmt)
+      runsLeft -= 1
+    matches = re.find(stepRe, convo)
+    steps = ' # '.join(matches)
+    output.add(query, sqlPlan, steps)
+    self.clearConverstaion()
+  output.to_csv('<dataFile.csv')
+\end{lstlisting}
+
+However, just asking the model to continue would sometimes cause it to reproduce its execution plan starting at step $1$. To mitigate this, we prompted its continuation dynamically, as shown in Text \ref{text:dynamicContinuationPrompt}, by retrieving the highest step produced so far and requesting the model to continue at the next step number. This prompting usually caused Llama to naturally end its execution plan before the number of \lstinline{runsLeft} reached $0$.
+
+\begin{text}
+  Please continue with the next step of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
+  \caption{The prompt used to request the model to continue its execution plan}
+  \label{text:dynamicContinuationPrompt}
+\end{text}
+
+We chose seven runs as a cutoff point because whenever the model was not naturally terminating its input before this point, it was not producing execution plans at all, but rather steps for completion of a data science project or the like.
+
+Running \lstinline{evalGen} generates execution plans for each example query in our dataset, and saves these examples and their reference in a separate CSV file. These results were then evaluated manually and compared to the execution plans produced by SQL Server.
+
+\subsection{Result Evaluation}
