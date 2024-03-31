@@ -1,6 +1,6 @@
 \section{Results}
 \subsection{Result Generation}
-We began basic experiments by simply prompting the model to generate execution plans. As we can see in Text \ref{text:basicConvo}, there is much roo for improvement.
+We began basic experiments by simply prompting the model to generate execution plans. As we can see in Text \ref{text:basicConvo}, there is much room for improvement.
 
 \begin{text}
   $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: select avg(c.credits) as 'creditAverage' from section se join course c on se.courseID = c.courseID; \#\#\# Execution Plan: [/INST]  Sure! Here's an execution plan for the query you provided:
@@ -89,3 +89,8 @@ We chose seven runs as a cutoff point because whenever the model was not natural
 Running \lstinline{evalGen} generates execution plans for each example query in our dataset, and saves these examples and their reference in a separate CSV file. These results were then evaluated manually and compared to the execution plans produced by SQL Server.
 
 \subsection{Result Evaluation}
+
+We found that the generated execution plans are not consistently accurate. They contain a mix of relevant and irrelevant steps, sometimes diverging significantly from the sequel server's execution plans. For example, they may include steps that are not applicable to the queries or that are overly simplified. In some cases, they introduce operations that are not optimal from a performace standpoint, such as unnecessary sorting and filtering operations that could increase the computational cost. Moreover, the plans sometimes suggest a sequence of operations that could lead to inefficient data access patterns or processing strategies not aligned with best practices for database query optimization.
+
+Given the inaccuracies and inefficiencies, the overall usefulness of the LLM-generated execution plans is limited. While they might provide some insights into potential operations involved in query execution, the misleading or incorrect information could confuse or mislead users, especially those less familiar with SQL query optimization. The plans lack the precision and reliability needed to serve as a guide for understanding or optimizing real database queries. However, with some further training of the LLM, it is quite likely that more effective plans could be generated.
+
