@@ -79,7 +79,7 @@ def evalGen(self):
 However, just asking the model to continue would sometimes cause it to reproduce its execution plan starting at step $1$. To mitigate this, we prompted its continuation dynamically, as shown in Text \ref{text:dynamicContinuationPrompt}, by retrieving the highest step produced so far and requesting the model to continue at the next step number. This prompting usually caused Llama to naturally end its execution plan before the number of \lstinline{runsLeft} reached $0$.
 
 \begin{text}
-  Please continue with the next step of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
+  Please continue with step 4 of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
   \caption{The prompt used to request the model to continue its execution plan}
   \label{text:dynamicContinuationPrompt}
 \end{text}
