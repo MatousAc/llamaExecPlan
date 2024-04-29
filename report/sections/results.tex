@@ -1,6 +1,6 @@
 \section{Results}
 \subsection{Result Generation}
-We began basic experiments by simply prompting the model to generate execution plans. As we can see in Text \ref{text:basicConvo}, there is much roo for improvement.
+We began basic experiments by simply prompting the model to generate execution plans. As we can see in Text \ref{text:basicConvo}, there is much room for improvement.
 
 \begin{text}
   $<$s$>$ \#\#\# Create a query execution plan for an RDBMS for the following query: \#\#\# Query: select avg(c.credits) as 'creditAverage' from section se join course c on se.courseID = c.courseID; \#\#\# Execution Plan: [/INST]  Sure! Here's an execution plan for the query you provided:
@@ -76,16 +76,101 @@ def evalGen(self):
   output.to_csv('<dataFile.csv')
 \end{lstlisting}
 
-However, just asking the model to continue would sometimes cause it to reproduce its execution plan starting at step $1$. To mitigate this, we prompted its continuation dynamically, as shown in Text \ref{text:dynamicContinuationPrompt}, by retrieving the highest step produced so far and requesting the model to continue at the next step number. This prompting usually caused Llama to naturally end its execution plan before the number of \lstinline{runsLeft} reached $0$.
+However, just asking the model to continue would sometimes cause it to reproduce its execution plan starting at step $1$. The model would then not be able to produce any new steps before it ran out of tokens. To mitigate this, we prompted its continuation dynamically, as shown in Text \ref{text:dynamicContinuationPrompt}, by retrieving the highest step produced so far and requesting the model to continue at the next step number. This prompting usually caused LLaMA to naturally end its execution plan before the number of \lstinline{runsLeft} reached zero.
 
 \begin{text}
-  Please continue with the next step of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
-  \caption{The prompt used to request the model to continue its execution plan}
+  Please continue with step 4 of the execution plan. When you feel that you are done with the execution plan, make your last step be "Return Results"
+  \caption{The dynamic prompt used to request the model to continue its execution plan}
   \label{text:dynamicContinuationPrompt}
 \end{text}
 
-We chose seven runs as a cutoff point because whenever the model was not naturally terminating its input before this point, it was not producing execution plans at all, but rather steps for completion of a data science project or the like.
+We chose seven runs as a cutoff point because during testing, whenever the model was not naturally terminating its input before this point, it was not producing execution plans at all, but rather steps for completion of a data science project or the like.
 
 Running \lstinline{evalGen} generates execution plans for each example query in our dataset, and saves these examples and their reference in a separate CSV file. These results were then evaluated manually and compared to the execution plans produced by SQL Server.
 
 \subsection{Result Evaluation}
+\begin{text}
+  \raggedright
+  \ContinuedFloat*
+  select s.isFemale, s.isHispanic, s.raceCode, st.housingCode, st.gradeLvl, st.credits, st.tensOfHoursWorked, a.distanceToFront a.seatColumn, a.statusCode, sn.finalGradeCode, sn.finalGrade from attendance a join student s on a.studentID = s.studentID join studentTerm st on s.studentID = st.studentID join studentSection sn on s.studentID = sn.studentID and sn.termID = st.termID join section n on sn.sectionID = n.sectionID join event e on n.sectionID = e.sectionID and e.eventID = a.eventID join course c on n.courseID = c.courseID where c.departmentID != 'NRSG' and c.departmentID != 'PEAC';
+  \caption{An example query for SQL and LLM-generated execution plan comparison}
+  \label{text:sqlVsLlamaPlan2}
+\end{text}
+
+\begin{text}
+  \raggedright
+  \ContinuedFloat
+  \# 1: Clustered Index Scan((attendance AS a), WHERE:(PROBE( attendance.eventID as a.eventID )))\\
+  \# 2: Clustered Index Scan((event AS e), WHERE:(PROBE( event.sectionID as e.sectionID ))\\
+  \# 3: Clustered Index Scan(section AS n)\\
+  \# 4: Clustered Index Scan((course AS c), WHERE:( course.departmentID as c.departmentID$<>$'NRSG' AND course.departmentID as c.departmentID$<>$'PEAC'))\\
+  \# 5: Hash Match(Inner Join, HASH:(c.courseID) = (n.courseID))\\
+  \# 6: Hash Match(Inner Join, HASH:(n.sectionID) = (e.sectionID))\\
+  \# 7: Hash Match(Inner Join, HASH:(e.eventID) = (a.eventID ))\\
+  \# 8: Filter(WHERE:(PROBE(event.sectionID as e.sectionID,attendance.studentID as a.studentID)))\\
+  \# 9: Clustered Index Scan(studentSection AS sn)\\
+  \# 10: Hash Match(Inner Join, HASH:(sn.sectionID, sn.studentID) = (e.sectionID, a.studentID ))\\
+  \# 11: Clustered Index Scan(studentTerm AS st)\\
+  \# 12: Hash Match(Inner Join, HASH:(st.studentID, st.termID) = (sn.studentID, sn.termID), RESIDUAL:(studentTerm.studentID as st.studentID = studentSection.studentID as sn.studentID AND studentSection.termID as sn.termID = studentTerm.termID as st.termID))\\
+  \# 13: Clustered Index Scan(student AS s)\\
+  \# 14: Hash Match(Inner Join, HASH:(s.studentID) = (sn.studentID))\\
+  \caption{The SQL Server execution plan for the second query}
+\end{text}
+
+\begin{text}
+  \raggedright
+  \ContinuedFloat
+  \# 1 Clustered Index Scan(WHERE)\\
+  \# 2 Sort(ORDER BY)\\
+  \# 3 Merge Join(Inner Join)\\
+  \# 4 Nested Loops (Join)\\
+  \# 5 Group By and Aggregation (Aggregate)\\
+  \# 6 Sort and Limit (Sort)\\
+  \# 7 Filter (Filter)\\
+  \# 8 Select (Select)
+  \caption{The LLM-generated execution plan for the second query}
+\end{text}
+
+Consider the comparison of a SQL-generated plan and LLM-generated plan in Text \ref{text:sqlVsLlamaPlan2}. This example was chosen due to the query's complexity and length. Upon comparing the SQL-generated plan with the LLM-generated plan, it is evident that the LLM-generated plan diverges significantly from the structured and detailed approach of the SQL-generated plan. The SQL-generated plan outlines a series of clustered index scans, hash matches, and specific filtering conditions, which are crucial for efficient data retrieval and processing. In contrast, the LLM-generated plan starts with a vague mention of a clustered index scan but quickly devolves into a series of operations without clear logical progression or specificity, such as "Sort", "Merge Join", and "Nested Loops", without detailing the conditions or tables involved. Notably, the LLM-generated plan lacks the precision in specifying join conditions and filtering criteria, which are essential for query execution. Furthermore, the inclusion of operations like "Sort" and "Group By and Aggregation" without context suggests a misunderstanding of the query's requirements, potentially leading to unnecessary computational overhead. While the attempt to include various database operations is noted, the lack of specificity and logical sequence in the LLM-generated plan highlights its inefficiency and inaccuracy compared to the SQL-generated plan.
+
+\begin{text}
+  \raggedright
+  \ContinuedFloat*
+  select avg(c.credits) as 'creditAverage' from section se join course c on se.courseID = c.courseID;
+  \caption{Comparison of SQL-generated plan and LLM-generated plan for the third query}
+  \label{text:sqlVsLlamaPlan3}
+\end{text}
+
+\begin{text}
+  \raggedright
+  \ContinuedFloat*
+  \# 1: Clustered Index Scan(section AS se)\\
+  \# 2: Sort(ORDER BY:(se.courseID ASC))\\
+  \# 3: Clustered Index Scan((course AS c), ORDERED FORWARD)\\
+  \# 4: Merge Join(Inner Join, MERGE:(c.courseID) = (se.courseID), RESIDUAL:(course.courseID as c.courseID = section.courseID as se.courseID))\\
+  \# 5: Stream Aggregate(DEFINE:(Expr1007 = Count(*), Expr1008 = SUM(course.credits as c.credits)))\\
+  \# 6: Compute Scalar(DEFINE:(Expr1002 = CASE WHEN Expr1007 = (0) THEN NULL ELSE Expr1008/CONVERT\_IMPLICIT(int,Expr1007,0) END))
+  \caption{The SQL Server execution plan for the third query}
+\end{text}
+
+\begin{text}
+  \raggedright
+  \ContinuedFloat
+  \#1 Clustered Index Scan(WHERE\\
+  \#2 Sort(ORDER BY: ss.studentID ASC\\
+  \#3 Clustered Index Seek(WHERE: ss.midtermGrade = 'F' AND ss.finalGrade = 'A'\\
+  \#4 Inner Join(studentSection, student on studentSection.studentID = student.studentID\\
+  \#5 Compute Aggregate Functions(avg(grade), avg(credits), avg(gpa), avg(class), avg(department), avg(major), avg(minor), avg(concentration), avg(award), avg(scholarship), avg(honor)\\
+  \#6 Group By and Summarize(grade, credits, gpa, class, department, major, minor, concentration, award, scholarship, honor\\
+  \#7 Filter and Sort(grade $>$ 80, credits $>$ 15, gpa $>$ 3.5, class in ('A', 'B', 'C'), department in ('CS', 'Math', 'Eng'), major in ('CS', 'Math'), minor in ('CS', 'Eng'), concentration in ('AI', 'DataSci'), award $>$ 500, scholarship
+  \caption{The LLM-generated execution plan for the third query}
+\end{text}
+
+The LLM-generated plan in Text \ref{text:sqlVsLlamaPlan3} exhibits several inaccuracies and inefficiencies when compared to the reference plan. Firstly, the inclusion of operations such as ``Clustered Index Seek'' with conditions unrelated to the query's purpose (e.g., `ss.midtermGrade = `F' AND ss.finalGrade = `A'') introduces steps that are not only irrelevant but also misleading. This diverges significantly from the SQL-generated plan, which focuses on a streamlined sequence of operations directly related to computing the average credits.
+
+Furthermore, the LLM plan suggests a broad range of aggregate functions and group by operations that are not required by the query, indicating a misunderstanding of the query's objective. One potential reason for this inaccuracy is the system prompt which includes an example requiring a filter by student grade. This inaccurate response is in stark contrast with the SQL Server plan's efficient use of a merge join followed by a stream aggregate to directly compute the required average. However, the LLM plan does correctly identify the need for a clustered index scan, albeit without specifying the table, which aligns with the initial step in the SQL plan. This correct identification, as seen in both Text \ref{text:sqlVsLlamaPlan2} and Text \ref{text:sqlVsLlamaPlan3}, suggests a partial understanding of the necessity to access table data. Nonetheless, the lack of specificity and logical sequence, as previously noted in the analysis of Text \ref{text:sqlVsLlamaPlan2}, persists, highlighting a consistent issue with the LLM-generated plans' effectiveness and accuracy.
+
+In summary, our analysis reveals that the execution plans generated by the model exhibit a notable variance in accuracy, often deviating significantly from the SQL Server's execution plans. These deviations manifest through the inclusion of both relevant and irrelevant steps, with some plans incorporating operations that are either not pertinent to the queries at hand or overly simplified. Notably, certain plans introduce operations that compromise performance efficiency, such as unnecessary sorting and filtering, which could inadvertently elevate computational costs. Furthermore, the suggested sequences of operations occasionally pave the way for inefficient data access patterns or employ processing strategies that diverge from established best practices in database query optimization.
+
+Reflecting on the inaccuracies and inefficiencies identified, it becomes evident that the utility of the model-generated execution plans is somewhat constrained. Although these plans can offer a glimpse into the array of operations that might be involved in query execution, the presence of misleading or incorrect information poses a risk of confusion or misdirection, particularly for individuals with limited familiarity with SQL query optimization techniques. The lack of precision and reliability undermines their potential to serve as a dependable resource for comprehending or enhancing real database queries. Nevertheless, the insights gleaned from comparing the model-generated plans against those produced by SQL Server underscore the potential for improvement. With targeted enhancements and fine-tuning, there is a promising opportunity for the model to generate more accurate and effective execution plans.
+

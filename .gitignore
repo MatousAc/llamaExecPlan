@@ -34,6 +34,7 @@ src/log/
 */*.log
 */*.fdb_latexmk
 */*.synctex.gz
+*/*.synctex.gz*
 # ignore the pdf too so that we have less merge conflicts
 # the pdf can always be regenerated
 */main.pdf

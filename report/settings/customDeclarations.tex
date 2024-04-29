@@ -44,3 +44,7 @@ literate =    {---}{{\ProcessThreeDashes}}3
 % {env name}{placement}{file output}[outer counter]
 \newfloat{text}{ht}{lop}[section]
 \floatname{text}{Text}
+
+% set up continued floats
+\DeclareCaptionLabelFormat{cont}{#1~#2\alph{ContinuedFloat}}
+\captionsetup[ContinuedFloat]{labelformat=cont}

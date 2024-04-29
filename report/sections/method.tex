@@ -2,7 +2,7 @@
 Testing a model's ability to generate query execution plans requires two resources, a running model and a real database for sourcing queries, execution plans, and database statistics. Since any moderately-sized database would suffice, we recycled a database for university attendance from a past publication \cite{hybl2023}. In the following subsection, we explain the setup required for our database and how we obtained the necessary data for the project. Then, in the next subsection, we explain the code used for the inference experiments.
 
 \subsection{Model Input}
-We hypothesized that an LLM would require two types of input to generate an execution plan: database descriptors and the query to be optimized. We obtained both from a database server we ran locally using \lstinline{mssql} docker containers. To set up the docker container, we ran \lstinline{docker-compose -f sauAttendance.yml up -d} where \lstinline{sauAttendance.yml} is the file shown in Listing \ref{lst:sauAttendance.yml}. This spins up a local container that we can connect to through SQL Server Management Studio (SSMS) using the host \lstinline{localhost,1433}, the user \lstinline{sa}, and the password specified in the \lstinline{yml} file. The using \lstinline{docker-compose} preserves the database even if the container is destroyed and recreated.
+We hypothesized that an LLM would require two types of input to generate an execution plan: database descriptors and the query to be optimized. We obtained both from a database server we ran locally using \lstinline{mssql} docker containers. To set up the docker container, we ran \lstinline{docker-compose -f sauAttendance.yml up -d} where \lstinline{sauAttendance.yml} is the file shown in Listing \ref{lst:sauAttendance.yml}. This spins up a local container that we can connect to through SQL Server Management Studio (SSMS) using the host \lstinline{localhost,1433}, the user \lstinline{sa}, and the password specified in the \lstinline{yml} file. Using \lstinline{docker-compose} preserves the database even if the container is destroyed and recreated.
 
 \begin{lstlisting}[
   language=yaml,
@@ -36,6 +36,20 @@ Once running, we constructed a relational database by importing comma-separated 
   \label{fig:schema}
 \end{figure*}
 
+\subsubsection{Queries}
+With the data available, queries can be written. All queries were written manually to ensure quality, correctness, and diversity. For example, consider the queries in Listings \ref{lst:selectCSPhysDept} and \ref{lst:selectNursBioDept}. The series of operations provided by SQL server for both of these examples comprise the following steps (cleaned for visual appearance):
+
+\begin{enumerate}
+  \raggedright
+  \item Clustered Index Seek((professor AS p), ordered forward)
+  \item Clustered Index Scan(section AS s)
+  \item Clustered Index Seek((department AS d),  where:(d.departmentName = 'firstDepartmentName' OR d.departmentName = 'secondDepartmentName') ordered forward)
+  \item Clustered Index Scan(course AS c)
+  \item Nested Loops(Inner Join, outer refs:(c.departmentID))
+  \item Hash Match(Inner Join, Hash:(c.courseID) = (s.courseID))
+  \item Nested Loops(Inner Join, outer refs:(s.professorID))
+\end{enumerate}
+
 \begin{lstlisting}[
   language=SQL,
   style=sqlStyle,
@@ -52,19 +66,7 @@ Once running, we constructed a relational database by importing comma-separated 
   select p.professorName from professor p join section s on p.professorID = s.professorID join course c on s.courseID = c.courseID join department d on c.departmentID = d.departmentID where d.departmentName = 'Nursing' or d.departmentName = 'Biology';
 \end{lstlisting}
 
-\subsubsection{Queries}
-With the data available, queries can be written. All queries were written manually to ensure quality, correctness, and diversity. For example, consider the queries in Listings \ref{lst:selectCSPhysDept} and \ref{lst:selectNursBioDept}. The series of operations provided by SQL server for both of these examples comprise the following steps (cleaned for visual appearance):
-\begin{enumerate}
-  \raggedright
-  \item Clustered Index Seek((professor AS p), ordered forward)
-  \item Clustered Index Scan(section AS s)
-  \item Clustered Index Seek((department AS d),  where:(d.departmentName = 'firstDepartmentName' OR d.departmentName = 'secondDepartmentName') ordered forward)
-  \item Clustered Index Scan(course AS c)
-  \item Nested Loops(Inner Join, outer refs:(c.departmentID))
-  \item Hash Match(Inner Join, Hash:(c.courseID) = (s.courseID))
-  \item Nested Loops(Inner Join, outer refs:(s.professorID))
-\end{enumerate}
-Aside from the names of the departments, these two queries require nearly identical procedures to retrieve. Because we are interested in what the LLM's method of information retrieval actually is, the queries presented to it should require diverse operations to execute. The query in Listing \ref{lst:selectAvgCourseCredits} would be a more appropriate example because it's execution plan includes sort, order by, stream aggregation, group by, and compute scalar functions.
+Aside from the names of the departments, these two queries require identical procedures to retrieve. Because we are interested in what the LLM's method of information retrieval actually is, the queries presented to it should require diverse operations to execute. The query in Listing \ref{lst:selectAvgCourseCredits} would be a more appropriate example because it's execution plan includes sort, order by, stream aggregation, group by, and compute scalar functions.
 
 \begin{lstlisting}[
   language=SQL,
@@ -74,7 +76,9 @@ Aside from the names of the departments, these two queries require nearly identi
   select d.departmentName, avg(c.credits) as 'creditAverage' from course c join department d on c.departmentID = d.departmentID group by d.departmentName;
 \end{lstlisting}
 
-With these goals for queries in mind, \dataRows diverse queries were written and executed on the database in Figure \ref{fig:schema}. Obtaining query execution plans merely requires turning on the \lstinline{showplan_text} setting with \lstinline{set showplan_text on;}. Under this setting, SSMS returns execution plans instead of the results of a query. However, the execution plans are unnecessarily messy. For example, the beginning of the raw execution plan for Listing \ref{lst:selectCSPhysDept} includes the unnecessary syntax shown in Text \ref{text:messyExecPlan}. The indentation, pipes, extra parentheses, and extra words such as \lstinline{OBJECT:} are distracting and would never be required as output from a large language model that was part of a database. Thus, we chose to clean this data to make it more human readable.
+With these goals for queries in mind, \dataRows diverse queries were written and executed on the database in Figure \ref{fig:schema}. Obtaining query execution plans merely requires turning on the \lstinline{showplan_text} setting in the SQL server. We can achieve this by executing \lstinline{set showplan_text on;}. With this setting, SSMS returns execution plans instead of the results of a query.
+
+However, the execution plans are unnecessarily messy. For example, the beginning of the raw execution plan for Listing \ref{lst:selectCSPhysDept} includes the unnecessary syntax shown in Text \ref{text:messyExecPlan}. The indentation, pipes, extra parentheses, and extra words such as \lstinline{OBJECT} are distracting and would never be required as output from a large language model that was part of a database. Thus, we chose to clean this data to make it more human readable.
 
 \begin{text}
   \begin{verbatim}
@@ -100,7 +104,7 @@ SEEK:([d].[departmentID]=[attendanceDB].
   \label{text:messyExecPlan}
 \end{text}
 
-The data cleaning was automated with \lstinline{sqlPlanCleaner.py}, shown in Listing \ref{lst:sqlPlanCleaner}. The script begins with removing pipes, brackets, parentheses, and unnecessary identifiers. It then filters out tokens such as \lstinline{residual}, \lstinline{define}, \lstinline{opt_bitmap}, and \lstinline{object} because these functions or objects are never the ``main'' function of any step in the queries we planned to test. Next, the \lstinline{N} preceding all string literals (such as in \lstinline{N'Computing'}) and any unnecessary parentheses are removed. Some execution plans also contained empty functions nested inside top-level operations, so these were removed. Finally, the output is numbered and placed on one line so it can be stored as a column in a CSV file.
+The execution plan cleaning procedure was automated with a simple script in \lstinline{sqlPlanCleaner.py}. Listing \ref{lst:sqlPlanCleaner} shows this script. It begins by removing pipes, brackets, parentheses, and unnecessary identifiers. It then filters out tokens such as \lstinline{residual}, \lstinline{define}, \lstinline{opt_bitmap}, and \lstinline{object} because these functions or objects are never the ``main'' function of any step in the queries we planned to test. Next, the \lstinline{N} preceding all string literals (such as in \lstinline{N'Computing'}) and any unnecessary parentheses are removed. Some execution plans also contained empty functions nested inside top-level operations, so these were removed. Finally, the output is numbered and placed on one line so it can be stored as a column in a CSV file.
 
 \begin{lstlisting}[
   language=python,

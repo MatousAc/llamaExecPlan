@@ -6,7 +6,7 @@ from dataFormatter import DataFormatter
 from timeLogger import TimeLogger
 
 class Inferer(ConfigBase):
-  # a srtring variable that holds the conversation throughout inference
+  # a string variable that holds the conversation throughout inference
   conversation = ''
   
   def configure(self):
