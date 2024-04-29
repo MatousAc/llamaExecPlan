@@ -29,7 +29,7 @@ class DataFormatter(ConfigBase):
         else: template = self.inputTemplate
       case 'manual':
         template = input(f'You: ')
-    prompt = self.fillTemplate(template, query = self.getRow())
+    prompt = self.fillTemplate(template, query = self.getRow()['query'])
     if sampleMode == 'generate' and not self.quiet: print(f'\r{prompt}')
     return prompt
 

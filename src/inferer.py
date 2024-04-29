@@ -65,7 +65,10 @@ class Inferer(ConfigBase):
     self.printHeader('Testing Loop')
     print('Ctrl+C to exit')
     try:
-      while True: self.inference(self.dataFormatter.getPrompt())
+      while True:
+        prompt = self.dataFormatter.getPrompt()
+        print(prompt)
+        print(self.inference(prompt))
     except KeyboardInterrupt: self.printHeader('Closing')
     except: raise # rethrow
   
