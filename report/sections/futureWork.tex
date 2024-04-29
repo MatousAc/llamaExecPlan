@@ -1,2 +1,10 @@
 \section{Future Work}
+Despite LLaMA's shortcomings in producing query execution plans, the results highlight that the model has an understanding of the procedural nature of the problem. The SQL query to execution plan problem can be framed as a translation or transformation task. The model's main issue is that it does not properly transform one way of expressing the query into another way of expressing it. Because, LLaMA 2 possesses the capability to translate between human languages, it follows that it should be able to translate between ways of expressing a query given enough training.
 
+Therefore, the clearest and most important piece of future work would be to fine-tune the model on SQL queries and their optimal execution plans. This could be done with the HuggingFace \lstinline{SFTTrainer} and the resulting models could then be run in the same manner as the base model.
+
+Fine-tuning can inform the base model of which types of functions are available in a query execution plan, how each function's parameters are formatted, and how the overall output should be formatted. This could serve to improve the number of steps the model produces at once because the model would stop explaining each step along the way.
+
+One other piece of future work comprises training and testing the model on various databases. New schemas and table sizes could reveal other flaws or advantages in the model's predictions.
+
+With these improvements, LLMs may become competitive with current execution plan generation methods. With the right data for training and methods of application, LLMs may someday teach us how to further improve query execution plans.
